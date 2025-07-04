@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from '@/components/ui/card';
-import { Image, Loader2 } from 'lucide-react';
+import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import { createPost } from '@/lib/posts';
 import { supabase } from '@/lib/supabase';
 
@@ -17,6 +17,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [charactersRemaining, setCharactersRemaining] = useState(280);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleContentChange = (value: string) => {
@@ -31,8 +32,10 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setImageFile(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file)); // 👈 show preview
     }
   };
 
@@ -46,11 +49,11 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        const { error } = await supabase.storage
-          .from('post-images') // 👈 create this bucket in Supabase
+        const { error: uploadError } = await supabase.storage
+          .from('post-images')
           .upload(fileName, imageFile);
 
-        if (error) throw error;
+        if (uploadError) throw uploadError;
 
         const { data: urlData } = supabase.storage
           .from('post-images')
@@ -59,10 +62,11 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
         imageUrl = urlData.publicUrl;
       }
 
-      await createPost(content.trim(), imageUrl);
+      await createPost(content.trim(), imageUrl); // ✅ Send image URL with post
       setContent('');
       setCharactersRemaining(280);
       setImageFile(null);
+      setImagePreview(null);
       onPostCreated();
     } catch (error) {
       console.error('Error creating post:', error);
@@ -98,12 +102,19 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
             className="hidden"
             onChange={handleImageChange}
           />
-          <Image className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <ImageIcon className="w-8 h-8 text-gray-400 mx-auto mb-2" />
           <p className="text-sm text-gray-600 mb-1">
             {imageFile ? imageFile.name : 'Click to add photo (optional)'}
           </p>
           <p className="text-xs text-gray-500">JPG, PNG, GIF up to 5MB</p>
         </div>
+
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="mb-4">
+            <img src={imagePreview} alt="Preview" className="rounded-lg max-w-full h-auto" />
+          </div>
+        )}
 
         <Button
           onClick={handleSubmit}
