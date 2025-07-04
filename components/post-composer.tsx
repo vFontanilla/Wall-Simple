@@ -46,7 +46,7 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from('post-images') // 👈 create this bucket in Supabase
           .upload(fileName, imageFile);
 
