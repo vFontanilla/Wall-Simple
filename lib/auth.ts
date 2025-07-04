@@ -28,12 +28,13 @@ export interface ProfileUpdate {
 // };
 
 export const signUp = async (email: string, password: string, fullName: string) => {
+  // Step 1: Sign up user via Supabase Auth
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
-        full_name: fullName,
+        full_name: fullName, // optional: synced to `auth.users` metadata
       },
     },
   });
@@ -42,17 +43,20 @@ export const signUp = async (email: string, password: string, fullName: string) 
 
   const user = data.user;
 
+  // Step 2: Insert profile only if user is successfully created
   if (user) {
     const now = new Date().toISOString();
 
     const { error: profileError } = await supabase
       .from('profiles')
-      .insert({
-        id: user.id,               // match the auth user ID
-        full_name: fullName,
-        created_at: now,
-        updated_at: now,
-      });
+      .insert([
+        {
+          id: user.id, // 🔐 must match auth.uid()
+          full_name: fullName,
+          created_at: now,
+          updated_at: now,
+        },
+      ]);
 
     if (profileError) throw profileError;
   }
