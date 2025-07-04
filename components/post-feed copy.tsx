@@ -7,7 +7,6 @@ import { MessageSquare, Heart } from 'lucide-react';
 import { getPosts, type Post } from '@/lib/posts';
 import { supabase } from '@/lib/supabase';
 import { formatDistanceToNow } from 'date-fns';
-import NextImage from 'next/image';
 
 interface PostFeedProps {
   refreshTrigger: number;
@@ -110,7 +109,7 @@ export function PostFeed({ refreshTrigger }: PostFeedProps) {
                 
                 {post.image_url && (
                   <div className="mt-3">
-                    <NextImage 
+                    <img 
                       src={post.image_url} 
                       alt="Post image" 
                       className="rounded-lg max-w-full h-auto"

@@ -7,11 +7,6 @@ export interface AuthUser {
   avatar_url?: string;
 }
 
-export interface ProfileUpdate {
-  full_name?: string;
-  avatar_url?: string;
-}
-
 export const signUp = async (email: string, password: string, fullName: string) => {
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -59,7 +54,7 @@ export const getProfile = async (userId: string) => {
   return data;
 };
 
-export const updateProfile = async (userId: string, updates: ProfileUpdate) => {
+export const updateProfile = async (userId: string, updates: any) => {
   const { data, error } = await supabase
     .from('profiles')
     .update({ ...updates, updated_at: new Date().toISOString() })

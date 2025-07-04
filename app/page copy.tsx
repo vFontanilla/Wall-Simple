@@ -9,10 +9,9 @@ import { PostComposer } from '@/components/post-composer';
 import { PostFeed } from '@/components/post-feed';
 import { UserProfile } from '@/components/user-profile';
 import { LogOut } from 'lucide-react';
-import type { User } from '@supabase/supabase-js';
 
 export default function HomePage() {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -34,7 +33,7 @@ export default function HomePage() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         if (session?.user) {
           setUser(session.user);
         } else {
@@ -96,7 +95,7 @@ export default function HomePage() {
             Welcome to Wall
           </h2>
           <p className="text-lg text-gray-600 mb-8">
-            Connect with friends and share what&apos;s on your mind.
+            Connect with friends and share what's on your mind.
           </p>
           <Button 
             size="lg"

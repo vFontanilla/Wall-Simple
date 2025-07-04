@@ -32,12 +32,8 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       await signIn(email, password);
       onSuccess();
       onClose();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('An unknown error occurred');
-      }
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -57,12 +53,8 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       await signUp(email, password, fullName);
       onSuccess();
       onClose();
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError('An unknown error occurred');
-      }
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -74,13 +66,13 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         <DialogHeader>
           <DialogTitle>Welcome to Wall</DialogTitle>
         </DialogHeader>
-
+        
         <Tabs defaultValue="signin" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
-
+          
           <TabsContent value="signin">
             <form onSubmit={handleSignIn} className="space-y-4">
               <div className="space-y-2">
@@ -112,7 +104,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
               </Button>
             </form>
           </TabsContent>
-
+          
           <TabsContent value="signup">
             <form onSubmit={handleSignUp} className="space-y-4">
               <div className="space-y-2">
