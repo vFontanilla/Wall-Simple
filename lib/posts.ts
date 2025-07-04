@@ -14,30 +14,28 @@ export interface Post {
   };
 }
 
-export const createPost = async (content: string, imageUrl?: string) => {
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) throw new Error('User not authenticated');
+export const createPost = async (content: string, imageUrl: string | null = null) => {
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  const { data, error } = await supabase
-    .from('posts')
-    .insert({
+  if (userError) throw userError;
+  if (!user) throw new Error('Not authenticated');
+
+  const now = new Date().toISOString();
+
+  const { error } = await supabase.from('posts').insert([
+    {
       user_id: user.id,
       content,
       image_url: imageUrl,
-    })
-    .select(`
-      *,
-      profiles (
-        full_name,
-        avatar_url,
-        username
-      )
-    `)
-    .single();
+      created_at: now,
+      updated_at: now,
+    },
+  ]);
 
   if (error) throw error;
-  return data;
 };
 
 export const getPosts = async (limit = 20, offset = 0) => {
