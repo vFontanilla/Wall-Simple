@@ -12,6 +12,21 @@ export interface ProfileUpdate {
   avatar_url?: string;
 }
 
+// export const signUp = async (email: string, password: string, fullName: string) => {
+//   const { data, error } = await supabase.auth.signUp({
+//     email,
+//     password,
+//     options: {
+//       data: {
+//         full_name: fullName,
+//       },
+//     },
+//   });
+
+//   if (error) throw error;
+//   return data;
+// };
+
 export const signUp = async (email: string, password: string, fullName: string) => {
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -24,8 +39,27 @@ export const signUp = async (email: string, password: string, fullName: string) 
   });
 
   if (error) throw error;
+
+  const user = data.user;
+
+  if (user) {
+    const now = new Date().toISOString();
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: user.id,               // match the auth user ID
+        full_name: fullName,
+        created_at: now,
+        updated_at: now,
+      });
+
+    if (profileError) throw profileError;
+  }
+
   return data;
 };
+
 
 export const signIn = async (email: string, password: string) => {
   const { data, error } = await supabase.auth.signInWithPassword({
