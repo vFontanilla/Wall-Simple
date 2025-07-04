@@ -28,13 +28,12 @@ export interface ProfileUpdate {
 // };
 
 export const signUp = async (email: string, password: string, fullName: string) => {
-  // Step 1: Sign up user via Supabase Auth
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: {
-        full_name: fullName, // optional: synced to `auth.users` metadata
+        full_name: fullName, // Optional: synced to auth.users
       },
     },
   });
@@ -42,26 +41,30 @@ export const signUp = async (email: string, password: string, fullName: string) 
   if (error) throw error;
 
   const user = data.user;
+  const session = data.session;
 
-  // Step 2: Insert profile only if user is successfully created
-  if (user) {
-    const now = new Date().toISOString();
-
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .insert([
-        {
-          id: user.id, // 🔐 must match auth.uid()
-          full_name: fullName,
-          created_at: now,
-          updated_at: now,
-        },
-      ]);
-
-    if (profileError) throw profileError;
+  // ✅ Make sure we're authenticated
+  if (!session || !user) {
+    throw new Error('Sign-up failed: No session returned. Check if email confirmation is still enabled.');
   }
 
-  return data;
+  const now = new Date().toISOString();
+
+  // Insert a profile row linked to the authenticated user
+  const { error: insertError } = await supabase
+    .from('profiles')
+    .insert([
+      {
+        id: user.id,               // 👈 MUST match auth.uid()
+        full_name: fullName,
+        created_at: now,
+        updated_at: now,
+      },
+    ]);
+
+  if (insertError) throw insertError;
+
+  return data; // Returns user + session
 };
 
 
