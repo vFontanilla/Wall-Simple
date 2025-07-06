@@ -7,7 +7,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import { createPost } from '@/lib/posts';
 import { supabase } from '@/lib/supabase';
-import { error } from 'console';
 
 interface PostComposerProps {
   onPostCreated: () => void;
