@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Image as ImageIcon, Loader2 } from 'lucide-react';
 import { createPost } from '@/lib/posts';
 import { supabase } from '@/lib/supabase';
+import { error } from 'console';
 
 interface PostComposerProps {
   onPostCreated: () => void;
@@ -17,7 +18,6 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [charactersRemaining, setCharactersRemaining] = useState(280);
   const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleContentChange = (value: string) => {
@@ -35,38 +35,39 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
     const file = e.target.files?.[0];
     if (file) {
       setImageFile(file);
-      setImagePreview(URL.createObjectURL(file)); // 👈 show preview
     }
   };
 
   const handleSubmit = async () => {
-    if (!content.trim() || isLoading) return;
+    if ((!content.trim() && !imageFile) || isLoading) 
+      return;
     setIsLoading(true);
 
     try {
+      console.log("Pumasok sa try block");
       let imageUrl: string | null = null;
 
       if (imageFile) {
         const fileExt = imageFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
+        console.log("Pumasok sa if block:", fileExt, fileName);
         const { error: uploadError } = await supabase.storage
           .from('post-images')
           .upload(fileName, imageFile);
-
-        if (uploadError) throw uploadError;
+        console.log("Pumasok ERROR:", uploadError);
 
         const { data: urlData } = supabase.storage
           .from('post-images')
           .getPublicUrl(fileName);
 
         imageUrl = urlData.publicUrl;
+        console.log("Image URL:", imageUrl);
       }
 
       await createPost(content.trim(), imageUrl); // ✅ Send image URL with post
       setContent('');
       setCharactersRemaining(280);
       setImageFile(null);
-      setImagePreview(null);
       onPostCreated();
     } catch (error) {
       console.error('Error creating post:', error);
@@ -109,17 +110,10 @@ export function PostComposer({ onPostCreated }: PostComposerProps) {
           <p className="text-xs text-gray-500">JPG, PNG, GIF up to 5MB</p>
         </div>
 
-        {/* Image Preview */}
-        {imagePreview && (
-          <div className="mb-4">
-            <img src={imagePreview} alt="Preview" className="rounded-lg max-w-full h-auto" />
-          </div>
-        )}
-
         <Button
           onClick={handleSubmit}
           className="bg-blue-600 hover:bg-blue-700 text-white"
-          disabled={!content.trim() || isLoading}
+          disabled={( !content.trim() && !imageFile ) || isLoading}
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Post

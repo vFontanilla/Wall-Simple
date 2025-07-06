@@ -111,9 +111,12 @@ export function PostFeed({ refreshTrigger }: PostFeedProps) {
                 {post.image_url && (
                   <div className="mt-3">
                     <NextImage 
+                      width={500}
+                      height={300}
                       src={post.image_url} 
                       alt="Post image" 
-                      className="rounded-lg max-w-full h-auto"
+                      className="rounded-lg"
+                      style={{ width: 'auto', height: 'auto' }}
                     />
                   </div>
                 )}
